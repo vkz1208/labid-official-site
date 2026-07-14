@@ -1,0 +1,48 @@
+name: Deploy to Alibaba Cloud OSS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  OSSUTIL_VERSION: 2.3.0
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ossutil
+        run: |
+          curl -fsSL -o ossutil.zip "https://gosspublic.alicdn.com/ossutil/v2/${OSSUTIL_VERSION}/ossutil-${OSSUTIL_VERSION}-linux-amd64.zip"
+          unzip -q ossutil.zip
+          sudo install -m 0755 "ossutil-${OSSUTIL_VERSION}-linux-amd64/ossutil" /usr/local/bin/ossutil
+          ossutil version
+
+      - name: Sync static website to OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          OSS_REGION: ${{ vars.ALIYUN_OSS_REGION }}
+          OSS_BUCKET: ${{ vars.ALIYUN_OSS_BUCKET }}
+        run: |
+          test -n "$OSS_ACCESS_KEY_ID"
+          test -n "$OSS_ACCESS_KEY_SECRET"
+          test -n "$OSS_REGION"
+          test -n "$OSS_BUCKET"
+
+          ossutil sync . "oss://${OSS_BUCKET}/" \
+            --region "$OSS_REGION" \
+            --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "README.md" \
+            --exclude "deploy/*"
