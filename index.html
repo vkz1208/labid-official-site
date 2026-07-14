@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Lab ID 专为课题组打造的学术网站，帮助研究者展示成果、表达思想、连接世界、传承知识。"
+    />
+    <title>Lab ID 官网</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0b1b3f;
+        --muted: #5e6f93;
+        --line: rgba(40, 91, 180, 0.16);
+        --blue: #1f64f2;
+        --page: #eef5ff;
+        --footer: rgba(255, 255, 255, 0.9);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--page);
+        color: var(--ink);
+        font-family:
+          "PingFang SC",
+          "Microsoft YaHei",
+          "Noto Sans CJK SC",
+          "Source Han Sans SC",
+          Arial,
+          sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      main {
+        min-height: calc(100vh - 72px);
+        display: grid;
+        place-items: center;
+        padding: 0;
+      }
+
+      .brand-hero {
+        width: 100%;
+        min-height: calc(100vh - 72px);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 65% 20%, rgba(113, 163, 240, 0.22), transparent 32rem),
+          linear-gradient(135deg, #f8fbff 0%, #edf5ff 54%, #dceaff 100%);
+      }
+
+      .brand-hero img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      @media (min-aspect-ratio: 16 / 9) {
+        .brand-hero img {
+          width: auto;
+          height: calc(100vh - 72px);
+          max-width: none;
+        }
+      }
+
+      .site-footer {
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 24px;
+        border-top: 1px solid var(--line);
+        background: var(--footer);
+        backdrop-filter: blur(12px);
+      }
+
+      .icp-link {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+        text-decoration: none;
+        transition:
+          color 160ms ease,
+          text-decoration-color 160ms ease;
+      }
+
+      .icp-link:hover,
+      .icp-link:focus-visible {
+        color: var(--blue);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      .icp-link:focus-visible {
+        outline: 2px solid rgba(31, 100, 242, 0.38);
+        outline-offset: 4px;
+      }
+
+      @media (max-width: 720px) {
+        main,
+        .brand-hero {
+          min-height: calc(100vh - 64px);
+        }
+
+        .brand-hero {
+          align-items: start;
+        }
+
+        .brand-hero img {
+          width: 100%;
+          min-height: calc(100vh - 64px);
+          object-fit: cover;
+          object-position: center top;
+        }
+
+        .site-footer {
+          min-height: 64px;
+          padding: 16px;
+        }
+
+        .icp-link {
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main aria-label="Lab ID 品牌理念">
+      <section class="brand-hero">
+        <img
+          src="assets/labid-brand-hero-wechat-1920x1080.png"
+          alt="Lab ID 专为课题组打造的学术网站，为学术研究构建数字身份。微信公众号：看见科学家。"
+        />
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a
+        class="icp-link"
+        href="https://beian.miit.gov.cn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        粤ICP备2026073823号
+      </a>
+    </footer>
+  </body>
+</html>
