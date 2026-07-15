@@ -41,7 +41,6 @@ jobs:
 
           ossutil sync . "oss://${OSS_BUCKET}/" \
             --region "$OSS_REGION" \
-            --delete \
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude "README.md" \
