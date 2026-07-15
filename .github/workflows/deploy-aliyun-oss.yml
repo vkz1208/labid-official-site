@@ -67,7 +67,18 @@ jobs:
             --region "$OSS_REGION" \
             --website-configuration file://website-configuration.json
 
-          ossutil api put-cname \
+          if ! ossutil api put-cname \
             --bucket "$OSS_BUCKET" \
             --region "$OSS_REGION" \
-            --cname-configuration '{"Cname":{"Domain":"www.labid.cn"}}'
+            --cname-configuration '{"Cname":{"Domain":"www.labid.cn"}}'; then
+            echo "Custom domain binding needs domain ownership verification."
+            ossutil api create-cname-token \
+              --bucket "$OSS_BUCKET" \
+              --region "$OSS_REGION" \
+              --cname-configuration '{"Cname":{"Domain":"www.labid.cn"}}' || true
+            ossutil api get-cname-token \
+              --bucket "$OSS_BUCKET" \
+              --region "$OSS_REGION" \
+              --cname "www.labid.cn" \
+              --output-format json || true
+          fi
