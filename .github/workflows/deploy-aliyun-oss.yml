@@ -66,3 +66,8 @@ jobs:
             --bucket "$OSS_BUCKET" \
             --region "$OSS_REGION" \
             --website-configuration file://website-configuration.json
+
+          ossutil api put-cname \
+            --bucket "$OSS_BUCKET" \
+            --region "$OSS_REGION" \
+            --cname-configuration '{"Cname":{"Domain":"www.labid.cn"}}'
