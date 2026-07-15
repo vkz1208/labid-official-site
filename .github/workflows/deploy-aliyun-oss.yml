@@ -39,6 +39,30 @@ jobs:
           test -n "$OSS_REGION"
           test -n "$OSS_BUCKET"
 
-          ossutil cp index.html "oss://${OSS_BUCKET}/index.html" --region "$OSS_REGION" --force
-          ossutil cp 404.html "oss://${OSS_BUCKET}/404.html" --region "$OSS_REGION" --force
-          ossutil cp assets "oss://${OSS_BUCKET}/assets/" --region "$OSS_REGION" --recursive --force
+          cat > website-configuration.json <<'JSON'
+          {
+            "IndexDocument": {
+              "Suffix": "index.html",
+              "SupportSubDir": "true",
+              "Type": "0"
+            },
+            "ErrorDocument": {
+              "Key": "404.html",
+              "HttpStatus": "404"
+            }
+          }
+          JSON
+
+          ossutil api put-bucket-public-access-block \
+            --bucket "$OSS_BUCKET" \
+            --region "$OSS_REGION" \
+            --public-access-block-configuration '{"BlockPublicAccess":"false"}'
+
+          ossutil cp index.html "oss://${OSS_BUCKET}/index.html" --region "$OSS_REGION" --acl public-read --force
+          ossutil cp 404.html "oss://${OSS_BUCKET}/404.html" --region "$OSS_REGION" --acl public-read --force
+          ossutil cp assets "oss://${OSS_BUCKET}/assets/" --region "$OSS_REGION" --recursive --acl public-read --force
+
+          ossutil api put-bucket-website \
+            --bucket "$OSS_BUCKET" \
+            --region "$OSS_REGION" \
+            --website-configuration file://website-configuration.json
