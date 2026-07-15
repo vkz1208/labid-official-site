@@ -27,7 +27,7 @@ jobs:
           sudo install -m 0755 "ossutil-${OSSUTIL_VERSION}-linux-amd64/ossutil" /usr/local/bin/ossutil
           ossutil version
 
-      - name: Sync static website to OSS
+      - name: Upload static website to OSS
         env:
           OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
           OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
@@ -39,9 +39,6 @@ jobs:
           test -n "$OSS_REGION"
           test -n "$OSS_BUCKET"
 
-          ossutil sync . "oss://${OSS_BUCKET}/" \
-            --region "$OSS_REGION" \
-            --exclude ".git/*" \
-            --exclude ".github/*" \
-            --exclude "README.md" \
-            --exclude "deploy/*"
+          ossutil cp index.html "oss://${OSS_BUCKET}/index.html" --region "$OSS_REGION" --force
+          ossutil cp 404.html "oss://${OSS_BUCKET}/404.html" --region "$OSS_REGION" --force
+          ossutil cp assets "oss://${OSS_BUCKET}/assets/" --region "$OSS_REGION" --recursive --force
