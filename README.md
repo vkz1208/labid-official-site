@@ -51,11 +51,11 @@ ALIYUN_ACCESS_KEY_SECRET
 添加 Variables：
 
 ```text
-ALIYUN_OSS_REGION=oss-cn-shenzhen
+ALIYUN_OSS_REGION=cn-shenzhen
 ALIYUN_OSS_BUCKET=你的 OSS Bucket 名称
 ```
 
-如果你的 Bucket 不在深圳地域，请把 `ALIYUN_OSS_REGION` 改成实际地域，例如 `oss-cn-hangzhou`。
+如果你的 Bucket 不在深圳地域，请把 `ALIYUN_OSS_REGION` 改成实际地域，例如 `cn-hangzhou`。
 
 ### 4. 推送并发布
 
