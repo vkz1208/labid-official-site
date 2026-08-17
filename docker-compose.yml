@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3001}:3000"
+    env_file:
+      - .env
+    volumes:
+      - labid_data:/app/data
+      - labid_uploads:/app/public/uploads
+    restart: unless-stopped
+
+volumes:
+  labid_data:
+  labid_uploads:

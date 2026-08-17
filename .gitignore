@@ -1,1 +1,14 @@
-deploy/*.zip
+node_modules/
+.next/
+out/
+data/*.db
+data/*.db-*
+.env
+.env.local
+.env.*.local
+public/uploads/*
+!public/uploads/.gitkeep
+*.log
+.DS_Store
+.playwright-cli/
+output/
