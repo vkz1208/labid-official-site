@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import type { LeadInput } from "@/lib/validation";
 
-export async function sendLeadNotification(lead: LeadInput) {
+export async function sendLeadEmail(lead: LeadInput, destination: string) {
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
   const password = process.env.SMTP_PASSWORD;
@@ -18,7 +18,7 @@ export async function sendLeadNotification(lead: LeadInput) {
   });
   await transporter.sendMail({
     from: process.env.SMTP_FROM || user,
-    to: process.env.LEAD_NOTIFICATION_EMAIL || "276238375@qq.com",
+    to: destination,
     subject: `[LabID 官网咨询] ${lead.school} - ${lead.name}`,
     text: [
       `提交时间：${new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}`,

@@ -118,6 +118,8 @@ type Lead = {
 }
 ```
 
+通知投递使用独立的 `lead_deliveries` 表，通过 `lead_id` 关联 Lead，字段包含 `channel`、`destination`、`status`、`attempts` 与 `last_error`。渠道名称为开放字符串，不为邮件、短信之外的后续渠道修改主表结构。
+
 ## 9. MediaAsset
 ```ts
 type MediaAsset = {

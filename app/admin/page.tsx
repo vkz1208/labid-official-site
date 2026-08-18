@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth";
 import { getAuditLogs, getCases, getLeads, getSiteContent } from "@/lib/db";
 import { AdminNav } from "@/components/AdminNav";
-import { deleteCaseAction, retryLeadEmailAction, saveCaseAction, saveSiteAction, updateLeadStatusAction } from "./actions";
+import { deleteCaseAction, retryLeadNotificationAction, saveCaseAction, saveSiteAction, updateLeadStatusAction } from "./actions";
 import Image from "next/image";
 import { AdminUnsavedGuard, DeleteCaseButton } from "@/components/AdminGuards";
 import { ImageUploadField } from "@/components/ImageUploadField";
@@ -29,7 +29,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
         <section id="overview" className="admin-section">
           <div className="admin-section-title"><div><span>概览</span><h2>今天需要关注什么</h2></div></div>
-          <div className="stat-grid"><article><span>案例</span><b>{cases.filter((item) => item.enabled).length}</b><p>个正在官网展示</p></article><article><span>新线索</span><b>{leads.filter((lead) => lead.status === "new").length}</b><p>条尚未联系</p></article><article><span>邮件待处理</span><b>{leads.filter((lead) => lead.emailStatus === "failed").length}</b><p>条通知发送失败</p></article></div>
+          <div className="stat-grid"><article><span>案例</span><b>{cases.filter((item) => item.enabled).length}</b><p>个正在官网展示</p></article><article><span>新线索</span><b>{leads.filter((lead) => lead.status === "new").length}</b><p>条尚未联系</p></article><article><span>通知待处理</span><b>{leads.flatMap((lead) => lead.deliveries).filter((delivery) => delivery.status === "failed").length}</b><p>个渠道发送失败</p></article></div>
         </section>
 
         <section id="content" className="admin-section">
@@ -54,7 +54,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
         <section id="leads" className="admin-section">
           <div className="admin-section-title"><div><span>咨询线索</span><h2>跟进新的团队需求</h2></div><p>{leads.length} 条记录</p></div>
-          {leads.length ? <div className="lead-list">{leads.map((lead) => <article className="lead-card" key={lead.id}><div className="lead-top"><div><span>{lead.school} · {lead.department}</span><h3>{lead.name}</h3></div><time>{new Date(`${lead.createdAt}Z`).toLocaleString("zh-CN")}</time></div><a href={lead.contact.includes("@") ? `mailto:${lead.contact}` : undefined}>{lead.contact}</a><p>{lead.message}</p><div className={`email-delivery ${lead.emailStatus}`}><span>邮件通知：{lead.emailStatus === "sent" ? "已发送" : lead.emailStatus === "failed" ? "发送失败" : "等待发送"}</span><small>已尝试 {lead.emailAttempts} 次</small>{lead.emailStatus === "failed" ? <form action={retryLeadEmailAction}><input type="hidden" name="id" value={lead.id}/><button>重新发送</button></form> : null}</div><form action={updateLeadStatusAction}><input type="hidden" name="id" value={lead.id}/><label>跟进状态<select name="status" defaultValue={lead.status}><option value="new">新线索</option><option value="contacted">已联系</option><option value="closed">已关闭</option></select></label><button>更新状态</button></form></article>)}</div> : <div className="admin-empty"><span>暂无咨询线索</span><p>公开站点提交的有效表单会安全保存在这里。</p></div>}
+          {leads.length ? <div className="lead-list">{leads.map((lead) => <article className="lead-card" key={lead.id}><div className="lead-top"><div><span>{lead.school} · {lead.department}</span><h3>{lead.name}</h3></div><time>{new Date(`${lead.createdAt}Z`).toLocaleString("zh-CN")}</time></div><a href={lead.contact.includes("@") ? `mailto:${lead.contact}` : undefined}>{lead.contact}</a><p>{lead.message}</p><div className="delivery-list">{lead.deliveries.map((delivery) => <div className={`email-delivery ${delivery.status}`} key={delivery.id}><span>{delivery.channel === "sms" ? "短信" : delivery.channel === "email" ? "邮件" : delivery.channel}：{delivery.status === "sent" ? "已发送" : delivery.status === "failed" ? "发送失败" : "等待发送"}</span><small>{delivery.destination} · 已尝试 {delivery.attempts} 次</small>{delivery.status === "failed" ? <form action={retryLeadNotificationAction}><input type="hidden" name="id" value={lead.id}/><input type="hidden" name="channel" value={delivery.channel}/><button>重新发送</button></form> : null}</div>)}</div><form action={updateLeadStatusAction}><input type="hidden" name="id" value={lead.id}/><label>跟进状态<select name="status" defaultValue={lead.status}><option value="new">新线索</option><option value="contacted">已联系</option><option value="closed">已关闭</option></select></label><button>更新状态</button></form></article>)}</div> : <div className="admin-empty"><span>暂无咨询线索</span><p>公开站点提交的有效表单会安全保存在这里。</p></div>}
         </section>
 
         <section id="audit" className="admin-section">

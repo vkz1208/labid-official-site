@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { destroyAdminSession, requireAdmin } from "@/lib/auth";
 import { db, getSiteContent, updateSiteContent, writeAuditLog } from "@/lib/db";
-import { sendLeadNotification } from "@/lib/email";
+import { dispatchLeadNotifications } from "@/lib/notifications";
 import crypto from "node:crypto";
 
 const text = (form: FormData, key: string) => String(form.get(key) || "").trim();
@@ -101,25 +101,18 @@ export async function updateLeadStatusAction(form: FormData) {
   redirect("/admin?saved=lead#leads");
 }
 
-export async function retryLeadEmailAction(form: FormData) {
+export async function retryLeadNotificationAction(form: FormData) {
   await requireAdmin();
   const id = Number(form.get("id"));
+  const channel = text(form, "channel");
+  if (!channel) redirect("/admin?error=notification-channel#leads");
   const row = db.prepare("SELECT * FROM leads WHERE id = ?").get(id) as {
     school: string; department: string; name: string; contact: string; message: string; source: string;
   } | undefined;
   if (!row) redirect("/admin?error=lead-not-found#leads");
-  try {
-    const result = await sendLeadNotification({
-      ...row, website: "", submissionKey: crypto.randomUUID(), utmSource: undefined, utmMedium: undefined, utmCampaign: undefined,
-    });
-    if (result.skipped) throw new Error("SMTP is not configured");
-    db.prepare("UPDATE leads SET email_status='sent', email_attempts=email_attempts+1, last_email_error='', updated_at=CURRENT_TIMESTAMP WHERE id=?").run(id);
-    writeAuditLog("lead_email_retried", "lead", String(id), "sent");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown email error";
-    db.prepare("UPDATE leads SET email_status='failed', email_attempts=email_attempts+1, last_email_error=?, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(message.slice(0, 500), id);
-    writeAuditLog("lead_email_retried", "lead", String(id), `failed: ${message}`);
-  }
+  await dispatchLeadNotifications(id, {
+    ...row, website: "", submissionKey: crypto.randomUUID(), utmSource: undefined, utmMedium: undefined, utmCampaign: undefined,
+  }, channel);
   revalidatePath("/admin");
-  redirect("/admin?saved=email#leads");
+  redirect("/admin?saved=notification#leads");
 }

@@ -58,6 +58,14 @@ export type Lead = {
   emailStatus: "pending" | "sent" | "failed";
   emailAttempts: number;
   lastEmailError: string;
+  deliveries: Array<{
+    id: number;
+    channel: string;
+    destination: string;
+    status: "pending" | "sent" | "failed";
+    attempts: number;
+    lastError: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 };

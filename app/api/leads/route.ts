@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { db, writeAuditLog } from "@/lib/db";
-import { sendLeadNotification } from "@/lib/email";
+import { dispatchLeadNotifications } from "@/lib/notifications";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { leadSchema } from "@/lib/validation";
 
@@ -42,18 +42,7 @@ export async function POST(request: Request) {
     });
     const leadId = Number(result.lastInsertRowid);
     writeAuditLog("lead_created", "lead", String(leadId), `${lead.school} · ${lead.name}`);
-    try {
-      const delivery = await sendLeadNotification(lead);
-      if (delivery.skipped) {
-        db.prepare("UPDATE leads SET email_status='failed', email_attempts=1, last_email_error='SMTP is not configured' WHERE id=?").run(leadId);
-      } else {
-        db.prepare("UPDATE leads SET email_status='sent', email_attempts=1, last_email_error='' WHERE id=?").run(leadId);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown email error";
-      db.prepare("UPDATE leads SET email_status='failed', email_attempts=1, last_email_error=? WHERE id=?").run(message.slice(0, 500), leadId);
-      console.error("Lead email notification failed", { leadId, error });
-    }
+    await dispatchLeadNotifications(leadId, lead);
     return NextResponse.json({ ok: true, id: result.lastInsertRowid }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) return NextResponse.json({ ok: true, duplicate: true });

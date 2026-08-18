@@ -81,6 +81,8 @@ docker compose up -d --build
 `labid_data` volume 保存数据库。部署升级时不要删除该 volume，并应定期备份其中的 `labid.db`。
 `labid_uploads` volume 保存通过 CMS 上传的案例封面。多实例部署建议改接对象存储。
 
+咨询提交后先写入持久化数据库，再通过 `lib/notifications.ts` 中注册的渠道独立投递。当前渠道为邮件和阿里云短信；每个渠道的状态、尝试次数和错误都保存在 `lead_deliveries`，新增渠道无需改动 Lead 主表。
+
 原先的阿里云 OSS 静态部署不再适用：CMS、数据库和邮件 API 需要持续运行的 Node 服务。静态图片仍可托管在 OSS，并通过 CMS 配置其 HTTPS URL。
 
 ## 文档

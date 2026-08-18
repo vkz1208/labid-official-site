@@ -52,6 +52,19 @@ export function initializeDatabase() {
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at DESC);
+    CREATE TABLE IF NOT EXISTS lead_deliveries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+      channel TEXT NOT NULL,
+      destination TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+      attempts INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (lead_id, channel, destination)
+    );
+    CREATE INDEX IF NOT EXISTS idx_lead_deliveries_lead ON lead_deliveries(lead_id, channel);
     CREATE TABLE IF NOT EXISTS analytics_events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -202,6 +215,13 @@ export function getLeads(): Lead[] {
     id: row.id, school: row.school, department: row.department, name: row.name,
     contact: row.contact, message: row.message, status: row.status, source: row.source,
     emailStatus: row.email_status, emailAttempts: row.email_attempts, lastEmailError: row.last_email_error,
+    deliveries: (db.prepare("SELECT * FROM lead_deliveries WHERE lead_id=? ORDER BY id").all(row.id) as Array<{
+      id: number; channel: string; destination: string; status: "pending" | "sent" | "failed";
+      attempts: number; last_error: string;
+    }>).map((delivery) => ({
+      id: delivery.id, channel: delivery.channel, destination: delivery.destination,
+      status: delivery.status, attempts: delivery.attempts, lastError: delivery.last_error,
+    })),
     createdAt: row.created_at, updatedAt: row.updated_at,
   }));
 }

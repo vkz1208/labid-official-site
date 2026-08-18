@@ -28,5 +28,10 @@ test("lead persistence enforces required data and duplicate submission protectio
   assert.throws(() => insert.run("某大学", "生命学院", "张老师", "zhang@example.test", "咨询主页", "/", "same-key"));
   assert.throws(() => insert.run(null, "生命学院", "张老师", "zhang@example.test", "咨询主页", "/", "other-key"));
   assert.equal(db.prepare("SELECT COUNT(*) AS count FROM leads").get().count, 1);
+  const leadId = Number(db.prepare("SELECT id FROM leads LIMIT 1").get().id);
+  db.prepare("INSERT INTO lead_deliveries (lead_id, channel, destination) VALUES (?, ?, ?)").run(leadId, "email", "notify@example.test");
+  db.prepare("INSERT INTO lead_deliveries (lead_id, channel, destination) VALUES (?, ?, ?)").run(leadId, "sms", "13800000000");
+  assert.equal(db.prepare("SELECT COUNT(*) AS count FROM lead_deliveries WHERE lead_id=?").get(leadId).count, 2);
+  assert.throws(() => db.prepare("INSERT INTO lead_deliveries (lead_id, channel, destination) VALUES (?, ?, ?)").run(leadId, "email", "notify@example.test"));
   db.close();
 });
